@@ -1,0 +1,141 @@
+#define _CRT_SECURE_NO_WARNINGS 
+#include <stdio.h>
+#include <locale.h>
+
+struct RoofData {
+    float roofWidth;
+    float roofLength;
+    int numSkylights;
+    float skylightWidth;
+    float skylightLength;
+};
+
+struct RoofMaterial {
+    char name[50];
+    float coveragePerSquareMeter;
+};
+
+void displayMenu() {
+    printf("1. Ввести данные о крыше\n");
+    printf("2. Ввести данные о кровельном материале\n");
+    printf("3. Рассчитать и вывести результаты\n");
+    printf("4. Завершить программу\n");
+}
+
+void getInput(struct RoofData* data) {
+    printf("Введите ширину крыши в см: ");
+    scanf_s("%fl", &(data->roofWidth));
+
+    printf("Введите длину крыши в см: ");
+    scanf_s("%fl", &(data->roofLength));
+
+    printf("Введите количество оконных проемов: ");
+    scanf_s("%d", &(data->numSkylights));
+
+  
+    printf("Введите ширину окна в см: ");
+    scanf_s("%fl", &(data->skylightWidth));
+
+    printf("Введите длину окна в см: ");
+    scanf_s("%fl", &(data->skylightLength));
+}
+
+void getMaterialInput(struct RoofMaterial* material) {
+   
+    printf("Введите название кровельного материала: ");
+    scanf("%s", material->name);
+    printf("Введите площадь, которую покрывает 1 кв.м. материала (в см^2): ");
+    scanf("%fl", &(material->coveragePerSquareMeter));
+}
+
+int calculateRoofArea(const struct RoofData* data) {
+    return data->roofWidth * data->roofLength;
+}
+
+int calculateSkylightArea(const struct RoofData* data) {
+    return data->numSkylights * data->skylightWidth * data->skylightLength;
+}
+
+int calculateTotalRoofArea(const struct RoofData* data) {
+    int roofArea = calculateRoofArea(data);
+    int skylightArea = calculateSkylightArea(data);
+    return roofArea - skylightArea;
+}
+
+int calculateMaterialAmount(const struct RoofData* data, const struct RoofMaterial* material) {
+    int totalRoofArea = calculateTotalRoofArea(data);
+    return totalRoofArea / material->coveragePerSquareMeter;
+}
+
+void writeDataToFile(const char* filename, const struct RoofData* data, const struct RoofMaterial* material, int materialAmount) {
+    FILE* file;
+    if (fopen_s(&file, filename, "w") == 0) {
+       
+        fprintf(file, "Ширина крыши: %f см\n", data->roofWidth);
+        fprintf(file, "Длина крыши: %f см\n", data->roofLength);
+        fprintf(file, "Количество оконных проемов: %d\n", data->numSkylights);
+        fprintf(file, "Ширина окна: %f см\n", data->skylightWidth);
+        fprintf(file, "Длина окна: %f см\n\n", data->skylightLength);
+        fprintf(file, "Используемый кровельный материал: %s\n", material->name);
+        fprintf(file, "Необходимое количество кровельного материала: %d штук\n", materialAmount);
+
+        fclose(file);
+    }
+    else {
+        printf("Ошибка при открытии файла для записи.\n");
+    }
+}
+
+void displayResult(int materialAmount, const struct RoofMaterial* material) {
+    setlocale(LC_ALL, "ru");
+    printf("Используемый кровельный материал: %s\n", material->name);
+    printf("Необходимое количество кровельного материала: %d штук\n", materialAmount);
+}
+
+int main() {
+    setlocale(LC_ALL, "ru");
+    struct RoofData roofData;
+    struct RoofMaterial roofingMaterial;
+
+    int choice;
+    int dataEntered = 0;
+
+    do {
+        displayMenu();
+        printf("Выберите опцию (1-4): ");
+        scanf_s("%d", &choice);
+
+        switch (choice) {
+        case 1:
+            getInput(&roofData);
+            dataEntered |= 1; 
+            break;
+
+        case 2:
+            getMaterialInput(&roofingMaterial);
+            dataEntered |= 2;  
+            break;
+
+        case 3:
+            if (dataEntered == 3) {  
+                int materialAmount = calculateMaterialAmount(&roofData, &roofingMaterial);
+                displayResult(materialAmount, &roofingMaterial);
+                writeDataToFile("roof_data.txt", &roofData, &roofingMaterial, materialAmount);
+            }
+            else {
+                printf("Введите данные о крыше и кровельном материале перед расчетами.\n");
+            }
+            break;
+
+        case 4:
+            printf("Программа завершена.\n");
+            break;
+
+        default:
+            printf("Неверный выбор. Пожалуйста, выберите от 1 до 4.\n");
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
