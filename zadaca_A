@@ -15,6 +15,71 @@ struct RoofMaterial {
     float coveragePerSquareMeter;
 };
 
+void displayMenu();
+
+void getInput(struct RoofData* data);
+
+void getMaterialInput(struct RoofMaterial* material);
+
+int calculateRoofArea(const struct RoofData* data);
+
+int calculateSkylightArea(const struct RoofData* data);
+
+int calculateTotalRoofArea(const struct RoofData* data);
+
+int calculateMaterialAmount(const struct RoofData* data, const struct RoofMaterial* material);
+
+void writeDataToFile(const char* filename, const struct RoofData* data, const struct RoofMaterial* material, int materialAmount);
+
+void displayResult(int materialAmount, const struct RoofMaterial* material);
+
+int main() {
+    setlocale(LC_ALL, "ru");
+    struct RoofData roofData;
+    struct RoofMaterial roofingMaterial;
+
+    int choice;
+    int dataEntered = 0;
+
+    do {
+        displayMenu();
+        printf("Выберите опцию (1-4): ");
+        scanf_s("%d", &choice);
+
+        switch (choice) {
+        case 1:
+            getInput(&roofData);
+            dataEntered |= 1;
+            break;
+
+        case 2:
+            getMaterialInput(&roofingMaterial);
+            dataEntered |= 2;
+            break;
+
+        case 3:
+            if (dataEntered == 3) {
+                int materialAmount = calculateMaterialAmount(&roofData, &roofingMaterial);
+                displayResult(materialAmount, &roofingMaterial);
+                writeDataToFile("roof_data.txt", &roofData, &roofingMaterial, materialAmount);
+            }
+            else {
+                printf("Введите данные о крыше и кровельном материале перед расчетами.\n");
+            }
+            break;
+
+        case 4:
+            printf("Программа завершена.\n");
+            break;
+
+        default:
+            printf("Неверный выбор. Пожалуйста, выберите от 1 до 4.\n");
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
 void displayMenu() {
     printf("1. Ввести данные о крыше\n");
     printf("2. Ввести данные о кровельном материале\n");
@@ -90,52 +155,4 @@ void displayResult(int materialAmount, const struct RoofMaterial* material) {
     setlocale(LC_ALL, "ru");
     printf("Используемый кровельный материал: %s\n", material->name);
     printf("Необходимое количество кровельного материала: %d штук\n", materialAmount);
-}
-
-int main() {
-    setlocale(LC_ALL, "ru");
-    struct RoofData roofData;
-    struct RoofMaterial roofingMaterial;
-
-    int choice;
-    int dataEntered = 0;
-
-    do {
-        displayMenu();
-        printf("Выберите опцию (1-4): ");
-        scanf_s("%d", &choice);
-
-        switch (choice) {
-        case 1:
-            getInput(&roofData);
-            dataEntered |= 1; 
-            break;
-
-        case 2:
-            getMaterialInput(&roofingMaterial);
-            dataEntered |= 2;  
-            break;
-
-        case 3:
-            if (dataEntered == 3) {  
-                int materialAmount = calculateMaterialAmount(&roofData, &roofingMaterial);
-                displayResult(materialAmount, &roofingMaterial);
-                writeDataToFile("roof_data.txt", &roofData, &roofingMaterial, materialAmount);
-            }
-            else {
-                printf("Введите данные о крыше и кровельном материале перед расчетами.\n");
-            }
-            break;
-
-        case 4:
-            printf("Программа завершена.\n");
-            break;
-
-        default:
-            printf("Неверный выбор. Пожалуйста, выберите от 1 до 4.\n");
-        }
-
-    } while (choice != 4);
-
-    return 0;
 }
